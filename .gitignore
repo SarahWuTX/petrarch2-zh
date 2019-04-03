@@ -1,0 +1,8 @@
+.idea
+.DS_Store
+stanford-corenlp-full-*
+*.pyc
+output
+xml
+PETRARCH.log
+
