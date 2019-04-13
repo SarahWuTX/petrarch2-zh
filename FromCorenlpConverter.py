@@ -1,7 +1,7 @@
 import glob
 import logging
 from stanfordcorenlp import StanfordCoreNLP
-from PetrXmlConverter import PetrXmlConverter
+from PetrXmlConverter import *
 
 
 class FromCorenlpConverter(PetrXmlConverter):
@@ -19,6 +19,23 @@ class FromCorenlpConverter(PetrXmlConverter):
     def __del__(self):
         self.nlp.close()
         print('\033[1;32m'+'Corenlp closed!'+'\033[0m')
+
+    def generate_events(self):
+        with open(self.input_path, 'r') as source:
+            for line in source.readlines():
+                properties = line.split('\t')
+                event = {
+                    Attr.id: properties[0],
+                    Attr.date: properties[4].split(' ')[0].replace('-', ''),
+                    Attr.source: properties[6],
+                    Attr.url: properties[9]
+                }
+                content = re.sub(r'\s', '', properties[8])
+                # parse = self.parse(content)
+                # event[Attr.content] = self.sep_sentence(parse)
+                event[Attr.content] = self.sep_sentence(content)
+                print('parse event {0}'.format(event[Attr.id]))
+                self.events.append(event)
 
     def parse(self, text):
         return self.nlp.parse(text)

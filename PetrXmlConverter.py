@@ -1,5 +1,8 @@
 # coding=utf-8
 import re
+import string
+import time
+from random import random
 from xml.dom.minidom import Document
 from enum import Enum, unique
 
@@ -29,20 +32,17 @@ class PetrXmlConverter:
         This method should be overridden depending on the input format of input files.
         """
         with open(self.input_path, 'r') as source:
-            for line in source.readlines():
-                properties = line.split('\t')
-                event = {
-                    Attr.id: properties[0],
-                    Attr.date: properties[4].split(' ')[0].replace('-', ''),
-                    Attr.source: properties[6],
-                    Attr.url: properties[9]
-                }
-                content = re.sub(r'\s', '', properties[8])
-                # parse = self.parse(content)
-                # event[Attr.content] = self.sep_sentence(parse)
-                event[Attr.content] = self.sep_sentence(content)
-                print('parse event {0}'.format(event[Attr.id]))
-                self.events.append(event)
+            event = {
+                Attr.id: ''.join(random.sample(string.ascii_letters + string.digits, 8)),
+                Attr.date: ''.join(time.strftime("%Y%m%d", time.localtime())),
+                Attr.source: 'NULL'
+            }
+            content = re.sub(r'\s', '', source.read())
+            # parse = self.parse(content)
+            # event[Attr.content] = self.sep_sentence(parse)
+            event[Attr.content] = self.sep_sentence(content)
+            print('parse event {0}'.format(event[Attr.id]))
+            self.events.append(event)
 
     def parse(self, text):
         return ''
@@ -63,6 +63,7 @@ class PetrXmlConverter:
     #                 })
     #             stack.pop()
     #     return sentences
+
     def sep_sentence(self, content):
         sentences = []
         content = content.replace('\u3000', '').replace('　', '')\
@@ -91,7 +92,6 @@ class PetrXmlConverter:
                 continue
 
             for sent_i in range(len(event[Attr.content])):
-
                 # <Text> element
                 xml_text = xml_doc.createElement('Text')
                 text_text = xml_doc.createTextNode('\n' + event[Attr.content][sent_i][Attr.text] + '\n')
